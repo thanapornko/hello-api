@@ -6,5 +6,6 @@ router.get("/", adminController.getAllUser);
 router.delete("/:id", adminController.deleteUser);
 router.patch("/:id", adminController.editUser);
 router.get("/record", adminController.getAllRecord);
+router.get("/avg", adminController.getUserAvgRecord);
 
 module.exports = router;

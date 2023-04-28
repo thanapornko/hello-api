@@ -1,3 +1,4 @@
+const { sequelize } = require("../models/index");
 const {
   validatePersonal
 } = require("../validators/personalValidator");
@@ -19,7 +20,13 @@ exports.deleteUser = async (req, res, next) => {
   try {
     // console.log("---PARAMS---", req.params);
     await User.destroy({
-      where: { id: req.params.id }
+      where: { id: req.params.id },
+      include: [
+        {
+          model: Physical,
+          where: { userId: req.params.id }
+        }
+      ]
     });
     res
       .status(200)
@@ -61,6 +68,47 @@ exports.getAllRecord = async (req, res, next) => {
         model: User
       },
       order: [["date", "DESC"]]
+    });
+    res.status(200).json({ record });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserAvgRecord = async (req, res, next) => {
+  try {
+    const record = await Physical.findAll({
+      attributes: [
+        "userId",
+        [
+          sequelize.fn(
+            "ROUND",
+            sequelize.fn("AVG", sequelize.col("weight")),
+            2
+          ),
+          "avgWeight"
+        ],
+        [
+          sequelize.fn(
+            "ROUND",
+            sequelize.fn("AVG", sequelize.col("height")),
+            2
+          ),
+          "avgHeight"
+        ],
+        [
+          sequelize.fn(
+            "ROUND",
+            sequelize.fn("AVG", sequelize.col("waist")),
+            2
+          ),
+          "avgWaist"
+        ]
+      ],
+      include: {
+        model: User
+      },
+      group: ["userId"]
     });
     res.status(200).json({ record });
   } catch (err) {
